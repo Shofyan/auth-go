@@ -2,6 +2,8 @@
 
 A production-ready authentication service built with Go, implementing Clean Architecture and Domain-Driven Design principles.
 
+![Dashboard](doc/auth-go-dashboard.png)
+
 ## 🏗️ Architecture
 
 ### Clean Architecture Layers
