@@ -17,5 +17,3 @@ bin/
 .DS_Store
 Thumbs.db
 
-# Docker
-*.dockerignore
