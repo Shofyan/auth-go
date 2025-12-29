@@ -4,7 +4,20 @@ A production-ready authentication service built with Go, implementing Clean Arch
 
 ![Dashboard](doc/auth-go-dashboard.png)
 
+## 📋 Table of Contents
+- [Architecture](#️-architecture)
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Web UI](#-web-ui)
+- [API Endpoints](#-api-endpoints)
+- [Token Flow](#-token-flow-demo)
+- [Testing](#-testing)
+- [Technology Stack](#-technology-stack)
+- [Project Highlights](#-project-highlights-for-interviews)
+
 ## 🏗️ Architecture
+
+This project follows **Clean Architecture** principles with **Domain-Driven Design** patterns, ensuring maintainability, testability, and scalability.
 
 ### Clean Architecture Layers
 
@@ -35,25 +48,29 @@ A production-ready authentication service built with Go, implementing Clean Arch
 
 ## ✨ Features
 
-### Web UI (HTMX)
-- **Modern Web Interface** - Clean, responsive UI built with HTMX
-- **Login/Register Pages** - User-friendly authentication forms
-- **Dashboard** - Protected user dashboard with profile information
+### 🎨 Web UI (HTMX)
+- **Modern Web Interface** - Clean, responsive UI built with HTMX and vanilla JavaScript
+- **Login/Register Pages** - User-friendly authentication forms with real-time validation
+- **Dashboard** - Protected user dashboard showing comprehensive profile information
 - **Dynamic Updates** - HTMX-powered interactions without full page reloads
-- **Token Management** - Automatic token handling and refresh
+- **Token Management** - Automatic JWT token handling with refresh token rotation
+- **Responsive Design** - Works seamlessly on desktop and mobile devices
 
-### Security & Authentication
-- **JWT Access Tokens** - Short-lived tokens for API access (15 min default)
+### 🔐 Security & Authentication
+- **JWT Access Tokens** - Short-lived stateless tokens for API access (15 min default)
 - **Refresh Tokens** - Long-lived tokens for obtaining new access tokens (7 days default)
 - **Token Rotation** - Automatic refresh token rotation for enhanced security
-- **Token Reuse Detection** - Detects and prevents refresh token reuse attacks
-- **Bcrypt Password Hashing** - Secure password storage with bcrypt
+- **Token Family Tracking** - Detects and prevents refresh token reuse attacks
+- **Bcrypt Password Hashing** - Industry-standard secure password storage (cost factor 10)
+- **Password Validation** - Enforces strong password requirements
+- **Secure Token Storage** - PostgreSQL with proper indexing and cascading deletes
 
-### RBAC (Role-Based Access Control)
-- Three-tier role system: User, Moderator, Admin
-- Hierarchical permission checking
-- Middleware-based route protection
-- Easy to extend with custom roles
+### 👥 RBAC (Role-Based Access Control)
+- **Three-tier role system**: User, Moderator, Admin
+- **Hierarchical permission checking** - Admins inherit Moderator & User permissions
+- **Middleware-based route protection** - Declarative access control
+- **Easy to extend** - Add custom roles without changing core logic
+- **Per-route authorization** - Fine-grained access control
 
 ### Clean Architecture Benefits
 - **Separation of Concerns** - Each layer has clear responsibilities
@@ -71,6 +88,11 @@ A production-ready authentication service built with Go, implementing Clean Arch
 ## 🚀 Quick Start
 
 ### Prerequisites
+
+![Go Version](https://img.shields.io/badge/Go-1.22+-00ADD8?style=flat&logo=go)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-316192?style=flat&logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)
+
 - Go 1.22+
 - PostgreSQL 14+
 - Docker & Docker Compose (optional)
@@ -337,7 +359,15 @@ User must re-authenticate
 
 ## 🧪 Testing
 
-### Using Postman Collection (Recommended)
+### Using Web UI (Easiest)
+
+1. Start the application: `docker compose up -d`
+2. Open browser: `http://localhost:8080/web/login`
+3. Register a new account
+4. Login and explore the dashboard and profile pages
+5. Test token refresh by waiting or manually refreshing
+
+### Using Postman Collection (Recommended for API)
 
 Import the Postman collection for easy API testing:
 
@@ -436,13 +466,16 @@ curl -X POST http://localhost:8080/api/v1/auth/refresh \
 
 ## 📚 Project Highlights for Interviews
 
-1. **Clean Architecture** - Clear separation of concerns across 4 layers
-2. **DDD** - Rich domain models, value objects, repository pattern
-3. **Security First** - Token rotation, reuse detection, secure password hashing
-4. **RBAC** - Flexible role-based access control
-5. **Production Ready** - Configuration, logging, error handling
-6. **No Framework Dependency** - Pure Go using standard library
-7. **Database Design** - Proper indexing, foreign keys, cascading deletes
+1. **Clean Architecture** - Clear separation of concerns across 4 layers (Domain, Application, Infrastructure, Interface)
+2. **Domain-Driven Design** - Rich domain models, value objects, repository pattern, domain services
+3. **Security First** - Token rotation, reuse detection, bcrypt hashing, RBAC
+4. **Production Ready** - Docker containerization, environment configuration, structured logging
+5. **Modern Web UI** - HTMX for dynamic interactions, responsive design, real-time updates
+6. **No Heavy Framework** - Pure Go using standard library for HTTP server
+7. **Database Design** - Proper indexing, foreign keys, cascading deletes, migration management
+8. **Best Practices** - Context propagation, dependency injection, interface-based design
+9. **Comprehensive Testing** - Postman collection, cURL examples, Web UI for manual testing
+10. **Well Documented** - Extensive README, code comments, API documentation
 
 ## 🎓 Learning Resources
 
