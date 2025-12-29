@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
@@ -99,5 +100,8 @@ func (m *AuthMiddleware) RequireRole(role entity.Role) func(http.Handler) http.H
 func respondWithError(w http.ResponseWriter, code int, message string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write([]byte(`{"error":"` + message + `"}`))
+	if _, err := w.Write([]byte(`{"error":"` + message + `"}`)); err != nil {
+		// Log error but response already sent
+		log.Printf("Error writing error response: %v", err)
+	}
 }

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"auth-go/internal/application/dto"
@@ -151,7 +152,10 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(response)
+	if _, err := w.Write(response); err != nil {
+		// Log error but response already sent
+		log.Printf("Error writing JSON response: %v", err)
+	}
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {

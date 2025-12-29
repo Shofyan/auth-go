@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"auth-go/internal/application/dto"
@@ -58,6 +59,7 @@ func (uc *LoginUseCase) Execute(ctx context.Context, req dto.LoginRequest) (*dto
 	user.UpdateLastLogin()
 	if err := uc.userRepo.Update(ctx, user); err != nil {
 		// Log error but don't fail the login
+		log.Printf("Failed to update last login for user %s: %v", user.ID, err)
 	}
 
 	// Generate access token

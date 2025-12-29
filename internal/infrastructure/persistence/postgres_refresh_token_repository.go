@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 
 	"auth-go/internal/domain/entity"
 	"auth-go/internal/domain/repository"
@@ -98,7 +99,12 @@ func (r *PostgresRefreshTokenRepository) FindByUserID(ctx context.Context, userI
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			// Log error but don't fail the operation
+			log.Printf("Error closing rows: %v", err)
+		}
+	}()
 
 	var tokens []*entity.RefreshToken
 	for rows.Next() {

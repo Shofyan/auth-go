@@ -50,7 +50,9 @@ func (h *WebHandler) ServeLogin(w http.ResponseWriter, r *http.Request) {
 		filepath.Join("web", "templates", "layout.html"),
 		filepath.Join("web", "templates", "login.html"),
 	))
-	t.ExecuteTemplate(w, "layout.html", data)
+	if err := t.ExecuteTemplate(w, "layout.html", data); err != nil {
+		log.Printf("Error executing login template: %v", err)
+	}
 }
 
 // ServeRegister serves the register page
@@ -63,7 +65,9 @@ func (h *WebHandler) ServeRegister(w http.ResponseWriter, r *http.Request) {
 		filepath.Join("web", "templates", "layout.html"),
 		filepath.Join("web", "templates", "register.html"),
 	))
-	t.ExecuteTemplate(w, "layout.html", data)
+	if err := t.ExecuteTemplate(w, "layout.html", data); err != nil {
+		log.Printf("Error executing register template: %v", err)
+	}
 }
 
 // ServeDashboard serves the dashboard page
@@ -77,7 +81,9 @@ func (h *WebHandler) ServeDashboard(w http.ResponseWriter, r *http.Request) {
 		filepath.Join("web", "templates", "layout.html"),
 		filepath.Join("web", "templates", "dashboard.html"),
 	))
-	t.ExecuteTemplate(w, "layout.html", data)
+	if err := t.ExecuteTemplate(w, "layout.html", data); err != nil {
+		log.Printf("Error executing dashboard template: %v", err)
+	}
 }
 
 // ServeProfile serves the profile page
@@ -91,7 +97,9 @@ func (h *WebHandler) ServeProfile(w http.ResponseWriter, r *http.Request) {
 		filepath.Join("web", "templates", "layout.html"),
 		filepath.Join("web", "templates", "profile.html"),
 	))
-	t.ExecuteTemplate(w, "layout.html", data)
+	if err := t.ExecuteTemplate(w, "layout.html", data); err != nil {
+		log.Printf("Error executing profile template: %v", err)
+	}
 }
 
 // ServeProfileData serves the profile data as HTML fragment
@@ -100,7 +108,9 @@ func (h *WebHandler) ServeProfileData(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(middleware.UserIDKey).(uuid.UUID)
 	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`<div class="error">Unauthorized</div>`))
+		if _, err := w.Write([]byte(`<div class="error">Unauthorized</div>`)); err != nil {
+			log.Printf("Error writing unauthorized response: %v", err)
+		}
 		return
 	}
 
@@ -110,7 +120,9 @@ func (h *WebHandler) ServeProfileData(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error fetching user from database: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`<div class="error">Failed to load user data</div>`))
+		if _, err := w.Write([]byte(`<div class="error">Failed to load user data</div>`)); err != nil {
+			log.Printf("Error writing error response: %v", err)
+		}
 		return
 	}
 	log.Printf("Successfully retrieved user data from database: email=%s, roles=%v", user.Email, user.Roles)
@@ -191,7 +203,9 @@ func (h *WebHandler) ServeProfileData(w http.ResponseWriter, r *http.Request) {
 	</div>`
 
 	w.Header().Set("Content-Type", "text/html")
-	w.Write([]byte(html))
+	if _, err := w.Write([]byte(html)); err != nil {
+		log.Printf("Error writing HTML response: %v", err)
+	}
 }
 
 // HandleLogout handles logout from web UI
@@ -220,7 +234,9 @@ func (h *WebHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request) 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`<div class="error">Invalid request</div>`))
+		if _, err := w.Write([]byte(`<div class="error">Invalid request</div>`)); err != nil {
+			log.Printf("Error writing error response: %v", err)
+		}
 		return
 	}
 
@@ -232,13 +248,17 @@ func (h *WebHandler) HandleRefreshToken(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		w.Header().Set("Content-Type", "text/html")
 		w.WriteHeader(http.StatusUnauthorized)
-		w.Write([]byte(`<div class="error">Token refresh failed</div>`))
+		if _, err := w.Write([]byte(`<div class="error">Token refresh failed</div>`)); err != nil {
+			log.Printf("Error writing error response: %v", err)
+		}
 		return
 	}
 
 	// Return success with new tokens as JSON for JavaScript to handle
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("Error encoding JSON response: %v", err)
+	}
 }
 
 // ServeHome redirects to login or dashboard

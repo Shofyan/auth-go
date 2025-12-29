@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"strings"
 
 	"auth-go/internal/domain/entity"
@@ -221,7 +222,12 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*entity.User, e
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			// Log error but don't fail the operation
+			log.Printf("Error closing rows: %v", err)
+		}
+	}()
 
 	var users []*entity.User
 	for rows.Next() {
