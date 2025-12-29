@@ -1,0 +1,21 @@
+# Environment files
+.env
+
+# Binaries
+*.exe
+*.out
+bin/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.dockerignore

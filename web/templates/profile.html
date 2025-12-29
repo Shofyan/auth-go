@@ -1,0 +1,75 @@
+{{define "content"}}
+<div class="navbar">
+    <h2>Auth Service Dashboard</h2>
+    <nav>
+        <a href="/web/dashboard">Dashboard</a>
+        <a href="/web/profile">Profile</a>
+        <button onclick="logout()">
+            Logout
+        </button>
+    </nav>
+</div>
+
+<h1>Your Profile</h1>
+<p>View your account information</p>
+
+<div id="profile-content">
+    <p>Loading your profile...</p>
+</div>
+
+<div id="message" style="margin-top: 20px;"></div>
+
+<script>
+    // Check if user is authenticated
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        window.location.href = '/web/login';
+    }
+
+    // Load profile data
+    async function loadProfile() {
+        try {
+            const response = await fetch('/web/profile-data', {
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                }
+            });
+            
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('profile-content').innerHTML = html;
+            } else if (response.status === 401) {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                window.location.href = '/web/login';
+            } else {
+                document.getElementById('profile-content').innerHTML = 
+                    '<div class="error">Failed to load profile</div>';
+            }
+        } catch (error) {
+            document.getElementById('profile-content').innerHTML = 
+                '<div class="error">Network error</div>';
+        }
+    }
+
+    // Logout
+    async function logout() {
+        try {
+            await fetch('/api/v1/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
+                }
+            });
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/web/login';
+    }
+
+    // Load profile on page load
+    loadProfile();
+</script>
+{{end}}
