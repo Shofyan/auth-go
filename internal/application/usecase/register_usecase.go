@@ -60,6 +60,15 @@ func (uc *RegisterUseCase) Execute(ctx context.Context, req dto.RegisterRequest)
 	// Create user entity
 	user := entity.NewUser(email.Value(), passwordHash)
 
+	// Set roles if provided, otherwise default to user role
+	if len(req.Roles) > 0 {
+		roles := make([]entity.Role, len(req.Roles))
+		for i, roleStr := range req.Roles {
+			roles[i] = entity.ParseRole(roleStr)
+		}
+		user.Roles = roles
+	}
+
 	// Save user
 	return uc.userRepo.Create(ctx, user)
 }

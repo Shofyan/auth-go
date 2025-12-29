@@ -2,8 +2,9 @@ package dto
 
 // RegisterRequest represents user registration request
 type RegisterRequest struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,min=8"`
+	Email    string   `json:"email" validate:"required,email"`
+	Password string   `json:"password" validate:"required,min=8"`
+	Roles    []string `json:"roles" validate:"omitempty,dive,oneof=user moderator admin"`
 }
 
 // LoginRequest represents user login request

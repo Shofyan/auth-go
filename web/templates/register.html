@@ -17,6 +17,25 @@
         <small style="color: #666; font-size: 12px;">Must include uppercase, lowercase, and number (min 8 characters)</small>
     </div>
 
+    <div class="form-group">
+        <label>Roles</label>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer;">
+                <input type="checkbox" name="roles" value="user" checked style="margin-right: 8px;">
+                User - Basic access to the system
+            </label>
+            <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer;">
+                <input type="checkbox" name="roles" value="moderator" style="margin-right: 8px;">
+                Moderator - Can moderate content
+            </label>
+            <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer;">
+                <input type="checkbox" name="roles" value="admin" style="margin-right: 8px;">
+                Admin - Full system access
+            </label>
+        </div>
+        <small style="color: #666; font-size: 12px;">Select one or more roles for this account</small>
+    </div>
+
     <button type="submit" id="registerBtn">
         Create Account
     </button>
@@ -37,6 +56,8 @@
         
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const roleCheckboxes = document.querySelectorAll('input[name="roles"]:checked');
+        const roles = Array.from(roleCheckboxes).map(cb => cb.value);
         
         try {
             const response = await fetch('/api/v1/auth/register', {
@@ -44,7 +65,7 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, roles })
             });
             
             if (response.ok) {

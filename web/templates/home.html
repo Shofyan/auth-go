@@ -82,19 +82,61 @@
             border-radius: 8px;
             overflow-x: auto;
         }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        .navbar nav {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .navbar a.active {
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            border-bottom: 2px solid white;
+        }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <h2>🔐 Authentication Service</h2>
+        <nav>
+            <a href="/" class="active">🏠 Home</a>
+            <a href="/web/dashboard">📊 Dashboard</a>
+            <a href="/web/profile">👤 Profile</a>
+            <a href="/web/login">Login</a>
+            <a href="/web/register">Register</a>
+            <a href="#" onclick="checkHealth(); return false;" style="background: rgba(72, 187, 120, 0.3);">Health Check</a>
+        </nav>
+    </div>
+
     <h1>🔐 Authentication Service with HTMX</h1>
     <p style="text-align: center; font-size: 18px; color: #666;">
         A modern, secure authentication system built with Go and HTMX
     </p>
-
-    <div class="cta">
-        <a href="/web/login" class="button">Login</a>
-        <a href="/web/register" class="button">Register</a>
-        <a href="#" onclick="checkHealth(); return false;" class="button" style="background: #48bb78;">Health Check</a>
-    </div>
 
     <div id="health-status" style="text-align: center; margin: 20px 0; display: none;">
         <div style="background: white; padding: 20px; border-radius: 8px; display: inline-block; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">

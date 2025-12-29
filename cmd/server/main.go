@@ -55,6 +55,7 @@ func main() {
 
 	// Initialize handlers
 	authHandler := handler.NewAuthHandler(registerUseCase, loginUseCase, refreshTokenUseCase, logoutUseCase)
+	adminHandler := handler.NewAdminHandler(userRepo)
 	webHandler := handler.NewWebHandler(logoutUseCase, refreshTokenUseCase, userRepo)
 
 	// Initialize middleware
@@ -63,7 +64,7 @@ func main() {
 	corsMiddleware := middleware.NewCORSMiddleware()
 
 	// Setup router
-	router := httpHandler.NewRouter(authHandler, webHandler, authMiddleware, logMiddleware, corsMiddleware)
+	router := httpHandler.NewRouter(authHandler, adminHandler, webHandler, authMiddleware, logMiddleware, corsMiddleware)
 	httpHandler := router.Setup()
 
 	// Start server

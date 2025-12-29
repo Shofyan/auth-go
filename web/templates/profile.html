@@ -1,21 +1,51 @@
 {{define "content"}}
 <div class="navbar">
-    <h2>Auth Service Dashboard</h2>
+    <h2>🔐 Authentication Service</h2>
     <nav>
+        <a href="/">🏠 Home</a>
         <a href="/web/dashboard">Dashboard</a>
-        <a href="/web/profile">Profile</a>
+        <a href="/web/profile" style="font-weight: bold; border-bottom: 2px solid white;">Profile</a>
         <button onclick="logout()">
             Logout
         </button>
     </nav>
 </div>
 
-<h1>Your Profile</h1>
-<p>View your account information</p>
+<h1>👤 Your Profile</h1>
+<p style="color: #666; margin-bottom: 20px;">Complete account information for the current logged-in user</p>
+
+<div style="margin-bottom: 20px;">
+    <button id="refreshBtn" onclick="loadProfile()" style="padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;">
+        🔄 Refresh Profile
+    </button>
+</div>
+
+<style>
+    #refreshBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    #refreshBtn:active {
+        transform: translateY(0);
+    }
+    #refreshBtn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
 
 <div id="profile-content">
-    <p>Loading your profile...</p>
+    <div style="text-align: center; padding: 40px;">
+        <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 15px; color: #666;">Loading your profile data from database...</p>
+    </div>
 </div>
+
+<style>
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
 
 <div id="message" style="margin-top: 20px;"></div>
 
@@ -28,6 +58,25 @@
 
     // Load profile data
     async function loadProfile() {
+        const refreshBtn = document.getElementById('refreshBtn');
+        
+        // Disable button during loading
+        if (refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '⏳ Loading...';
+        }
+        
+        // Clear any previous messages
+        document.getElementById('message').innerHTML = '';
+        
+        // Show loading state
+        document.getElementById('profile-content').innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+                <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 15px; color: #666;">Fetching your profile data from PostgreSQL database...</p>
+            </div>
+        `;
+
         try {
             const response = await fetch('/web/profile-data', {
                 headers: {
@@ -38,22 +87,41 @@
             if (response.ok) {
                 const html = await response.text();
                 document.getElementById('profile-content').innerHTML = html;
+                document.getElementById('message').innerHTML = 
+                    '<div style="padding: 12px; background: #d4edda; color: #155724; border-radius: 6px; border: 1px solid #c3e6cb; font-weight: 500;">✓ Profile data successfully loaded from PostgreSQL database at ' + new Date().toLocaleTimeString() + '</div>';
+                setTimeout(() => {
+                    document.getElementById('message').innerHTML = '';
+                }, 4000);
             } else if (response.status === 401) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 window.location.href = '/web/login';
             } else {
                 document.getElementById('profile-content').innerHTML = 
-                    '<div class="error">Failed to load profile</div>';
+                    '<div class="error">❌ Failed to load profile data</div>';
+                document.getElementById('message').innerHTML = 
+                    '<div style="padding: 12px; background: #f8d7da; color: #721c24; border-radius: 6px; border: 1px solid #f5c6cb;">❌ Error loading profile data</div>';
             }
         } catch (error) {
             document.getElementById('profile-content').innerHTML = 
-                '<div class="error">Network error</div>';
+                '<div class="error">❌ Network error - Unable to connect to server</div>';
+            document.getElementById('message').innerHTML = 
+                '<div style="padding: 12px; background: #f8d7da; color: #721c24; border-radius: 6px; border: 1px solid #f5c6cb;">❌ Network error occurred</div>';
+        } finally {
+            // Re-enable button
+            if (refreshBtn) {
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = '🔄 Refresh Profile';
+            }
         }
     }
 
     // Logout
     async function logout() {
+        if (!confirm('Are you sure you want to logout?')) {
+            return;
+        }
+        
         try {
             await fetch('/api/v1/auth/logout', {
                 method: 'POST',

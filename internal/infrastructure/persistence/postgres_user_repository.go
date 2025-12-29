@@ -208,3 +208,52 @@ func (r *PostgresUserRepository) ExistsByEmail(ctx context.Context, email string
 	err := r.db.QueryRowContext(ctx, query, email).Scan(&exists)
 	return exists, err
 }
+
+// FindAll finds all users
+func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*entity.User, error) {
+	query := `
+		SELECT id, email, password_hash, roles, is_active, created_at, updated_at, last_login_at
+		FROM users
+		ORDER BY created_at DESC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*entity.User
+	for rows.Next() {
+		user := &entity.User{}
+		var roles pq.StringArray
+		var lastLoginAt sql.NullTime
+
+		err := rows.Scan(
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&roles,
+			&user.IsActive,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+			&lastLoginAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		user.Roles = make([]entity.Role, len(roles))
+		for i, role := range roles {
+			user.Roles[i] = entity.ParseRole(role)
+		}
+
+		if lastLoginAt.Valid {
+			user.LastLoginAt = &lastLoginAt.Time
+		}
+
+		users = append(users, user)
+	}
+
+	return users, rows.Err()
+}

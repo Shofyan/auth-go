@@ -27,4 +27,7 @@ type UserRepository interface {
 
 	// ExistsByEmail checks if a user exists by email
 	ExistsByEmail(ctx context.Context, email string) (bool, error)
+
+	// FindAll finds all users
+	FindAll(ctx context.Context) ([]*entity.User, error)
 }

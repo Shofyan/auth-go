@@ -11,6 +11,7 @@ import (
 // Router sets up HTTP routes
 type Router struct {
 	authHandler    *handler.AuthHandler
+	adminHandler   *handler.AdminHandler
 	webHandler     *handler.WebHandler
 	authMiddleware *middleware.AuthMiddleware
 	logMiddleware  *middleware.LoggingMiddleware
@@ -20,6 +21,7 @@ type Router struct {
 // NewRouter creates a new router
 func NewRouter(
 	authHandler *handler.AuthHandler,
+	adminHandler *handler.AdminHandler,
 	webHandler *handler.WebHandler,
 	authMiddleware *middleware.AuthMiddleware,
 	logMiddleware *middleware.LoggingMiddleware,
@@ -27,6 +29,7 @@ func NewRouter(
 ) *Router {
 	return &Router{
 		authHandler:    authHandler,
+		adminHandler:   adminHandler,
 		webHandler:     webHandler,
 		authMiddleware: authMiddleware,
 		logMiddleware:  logMiddleware,
@@ -52,7 +55,7 @@ func (rt *Router) Setup() http.Handler {
 	mux.Handle("/api/v1/admin/users",
 		rt.authMiddleware.Authenticate(
 			rt.authMiddleware.RequireRole(entity.RoleAdmin)(
-				http.HandlerFunc(rt.handleAdminUsers),
+				http.HandlerFunc(rt.adminHandler.ListUsers),
 			),
 		),
 	)
@@ -66,6 +69,7 @@ func (rt *Router) Setup() http.Handler {
 	mux.HandleFunc("/web/profile", rt.webHandler.ServeProfile)
 
 	// Protected web data endpoints (API calls from JavaScript)
+	mux.Handle("/web/profile-data", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.webHandler.ServeProfileData)))
 	mux.Handle("/web/logout", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.webHandler.HandleLogout)))
 	mux.Handle("/web/refresh-token", rt.authMiddleware.Authenticate(http.HandlerFunc(rt.webHandler.HandleRefreshToken)))
 
@@ -80,10 +84,4 @@ func (rt *Router) Setup() http.Handler {
 	handler = rt.logMiddleware.Log(handler)
 
 	return handler
-}
-
-func (rt *Router) handleAdminUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message":"Admin route - RBAC working!"}`))
 }

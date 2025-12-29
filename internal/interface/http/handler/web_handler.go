@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
 
@@ -103,13 +104,16 @@ func (h *WebHandler) ServeProfileData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch full user data from repository
+	// Fetch full user data from repository (PostgreSQL database)
+	log.Printf("Fetching user data from PostgreSQL database for user ID: %s", userID.String())
 	user, err := h.userRepo.FindByID(r.Context(), userID)
 	if err != nil {
+		log.Printf("Error fetching user from database: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`<div class="error">Failed to load user data</div>`))
 		return
 	}
+	log.Printf("Successfully retrieved user data from database: email=%s, roles=%v", user.Email, user.Roles)
 
 	roleStrings := make([]string, len(user.Roles))
 	for i, role := range user.Roles {
@@ -131,42 +135,59 @@ func (h *WebHandler) ServeProfileData(w http.ResponseWriter, r *http.Request) {
 		accountStatusColor = "#e53e3e"
 	}
 
-	// Return HTML fragment
-	html := `<div class="profile-card">
-		<div class="profile-field">
-			<strong>User ID:</strong>
-			<span style="font-family: monospace;">` + user.ID.String() + `</span>
-		</div>
-		<div class="profile-field">
-			<strong>Email:</strong>
-			<span>` + user.Email + `</span>
-		</div>
-		<div class="profile-field">
-			<strong>Account Status:</strong>
-			<span style="color: ` + accountStatusColor + `; font-weight: bold;">` + accountStatus + `</span>
-		</div>
-		<div class="profile-field">
-			<strong>Roles:</strong>
-			<div>`
+	// Return HTML fragment with table format
+	html := `
+	<div class="profile-card">
+		<h3 style="margin-top: 0; margin-bottom: 10px; color: #4a5568;">Account Information</h3>
+		<p style="font-size: 12px; color: #718096; margin-bottom: 15px;">📊 Data retrieved from PostgreSQL database for User ID: ` + user.ID.String() + `</p>
+		<table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden;">
+			<thead>
+				<tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+					<th style="padding: 12px; text-align: left; font-weight: 600;">Field</th>
+					<th style="padding: 12px; text-align: left; font-weight: 600;">Value</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr style="border-bottom: 1px solid #e2e8f0;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">User ID</td>
+					<td style="padding: 12px; font-family: monospace; color: #2d3748;">` + user.ID.String() + `</td>
+				</tr>
+				<tr style="border-bottom: 1px solid #e2e8f0; background: #f7fafc;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Email</td>
+					<td style="padding: 12px; color: #2d3748;">` + user.Email + `</td>
+				</tr>
+				<tr style="border-bottom: 1px solid #e2e8f0;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Account Status</td>
+					<td style="padding: 12px;">
+						<span style="color: ` + accountStatusColor + `; font-weight: bold; padding: 4px 12px; background: ` + accountStatusColor + `20; border-radius: 12px;">
+							` + accountStatus + `
+						</span>
+					</td>
+				</tr>
+				<tr style="border-bottom: 1px solid #e2e8f0; background: #f7fafc;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Roles</td>
+					<td style="padding: 12px;">`
 
 	for _, role := range roleStrings {
-		html += `<span class="badge">` + role + `</span>`
+		html += `<span class="badge" style="margin-right: 6px;">` + role + `</span>`
 	}
 
-	html += `</div>
-		</div>
-		<div class="profile-field">
-			<strong>Account Created:</strong>
-			<span>` + createdAt + `</span>
-		</div>
-		<div class="profile-field">
-			<strong>Last Updated:</strong>
-			<span>` + updatedAt + `</span>
-		</div>
-		<div class="profile-field">
-			<strong>Last Login:</strong>
-			<span>` + lastLogin + `</span>
-		</div>
+	html += `</td>
+				</tr>
+				<tr style="border-bottom: 1px solid #e2e8f0;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Account Created</td>
+					<td style="padding: 12px; color: #2d3748;">` + createdAt + `</td>
+				</tr>
+				<tr style="border-bottom: 1px solid #e2e8f0; background: #f7fafc;">
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Last Updated</td>
+					<td style="padding: 12px; color: #2d3748;">` + updatedAt + `</td>
+				</tr>
+				<tr>
+					<td style="padding: 12px; font-weight: 600; color: #4a5568;">Last Login</td>
+					<td style="padding: 12px; color: #2d3748;">` + lastLogin + `</td>
+				</tr>
+			</tbody>
+		</table>
 	</div>`
 
 	w.Header().Set("Content-Type", "text/html")
